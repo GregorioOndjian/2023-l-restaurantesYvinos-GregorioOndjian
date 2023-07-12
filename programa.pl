@@ -11,6 +11,7 @@ restauranteActivo(superFinoli).
 menu(panchoMayo, carta(1000, pancho)).
 menu(panchoMayo, carta(200, hamburguesa)).
 menu(finoli, carta(2000, hamburguesa)).
+menu(finoli, carta(1500, pancho)).
 menu(finoli, pasos(15, 15000, [chateauMessi, francescoliSangiovese, susanaBalboaMalbec], 6)).
 menu(noTanFinoli, pasos(2, 3000, [guinoPin, juanaDama],3)).
 
@@ -41,4 +42,21 @@ malaOrganizacionDeMenu(Restaurante,carta(Precio,Plato)):-
 malaOrganizacionDeMenu(_, pasos(CantidadDePasos,_,ListaVinos,_)):-
     length(ListaVinos,NumeroVinos),
     CantidadDePasos > NumeroVinos.
+
+
+copiaBarata(Copia,Restaurante):-
+    tieneLosMismosPlatos(Copia,Restaurante,PlatoCopiado),
+    platosALaCarta(Restaurante,PlatoCopiado,PrecioOriginal),
+    platosALaCarta(Copia,PlatoCopiado,PrecioRestauranteCopia),
+    PrecioRestauranteCopia < PrecioOriginal.
+
+
+platosALaCarta(Restaurante,Plato,Precio):-
+    menu(Restaurante,carta(Precio,Plato)).
+
+tieneLosMismosPlatos(Copia,Restaurante,PlatoCopiado):-
+    platosALaCarta(Restaurante,PlatoCopiado,_),
+    forall(platosALaCarta(Restaurante,PlatoCopiado,_),platosALaCarta(Copia,PlatoCopiado,_)).
+
+
 
