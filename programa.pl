@@ -11,8 +11,8 @@ restauranteActivo(superFinoli).
 menu(panchoMayo, carta(1000, pancho)).
 menu(panchoMayo, carta(200, hamburguesa)).
 menu(finoli, carta(2000, hamburguesa)).
-menu(finoli, carta(1500, pancho)).
 menu(finoli, pasos(15, 15000, [chateauMessi, francescoliSangiovese, susanaBalboaMalbec], 6)).
+menu(finoli, pasos(15, 1000, [chateauMessi, francescoliSangiovese, susanaBalboaMalbec], 6)).
 menu(noTanFinoli, pasos(2, 3000, [guinoPin, juanaDama],3)).
 
 vino( chateauMessi, francia, 5000).
@@ -43,13 +43,13 @@ malaOrganizacionDeMenu(_, pasos(CantidadDePasos,_,ListaVinos,_)):-
     length(ListaVinos,NumeroVinos),
     CantidadDePasos > NumeroVinos.
 
-
-copiaBarata(Copia,Restaurante):-
+%4
+/*
+copiaBarata(Copia,Restaurante,_):-
     tieneLosMismosPlatos(Copia,Restaurante,PlatoCopiado),
     platosALaCarta(Restaurante,PlatoCopiado,PrecioOriginal),
-    platosALaCarta(Copia,PlatoCopiado,PrecioRestauranteCopia),
-    PrecioRestauranteCopia < PrecioOriginal.
-
+    forall(tieneLosMismosPlatos(Copia,Restaurante,PlatoCopiado),platosALaCarta(Copia,PlatoCopiado,PrecioCopia)).
+*/
 
 platosALaCarta(Restaurante,Plato,Precio):-
     menu(Restaurante,carta(Precio,Plato)).
@@ -60,3 +60,36 @@ tieneLosMismosPlatos(Copia,Restaurante,PlatoCopiado):-
 
 
 
+%5
+precioPromedio(Restaurante,Promedio):-
+    restauranteActivo(Restaurante),
+    findall(Precio,calculoPrecio(Restaurante,_,Precio),ListaPrecios),
+    sum_list(ListaPrecios, SumaDePrecios),
+    length(ListaPrecios,Longitud),
+    Promedio is SumaDePrecios / Longitud.
+
+    
+calculoPrecio(Restaurante,carta(Precio,_),Precio):-
+    menu(Restaurante,carta(Precio,_)).
+
+calculoPrecio(Restaurante,pasos(_, PrecioTotal, ListaVinos,CantComenzales),Precio):-
+    menu(Restaurante,pasos(_, PrecioTotal, ListaVinos,CantComenzales)),
+    recorrerListaVinos(ListaVinos, PrecioVinosTotal),
+    Precio is ((PrecioTotal + PrecioVinosTotal)/CantComenzales).
+
+recorrerListaVinos([],0).
+
+recorrerListaVinos([X | Xs], PrecioFinal):- 
+    precioVino(X, PrecioVino),
+    recorrerListaVinos(Xs, Precio),
+    PrecioFinal is Precio + PrecioVino.
+
+precioVino(Vino,Precio):-
+    vino(Vino,Nacionalidad,PrecioOriginal),
+    Nacionalidad \= argentina,
+    Precio is PrecioOriginal *1.35.
+
+precioVino(Vino,Precio):- 
+    vino(Vino,Nacionalidad,PrecioOriginal),
+    Nacionalidad == argentina,
+    Precio is  PrecioOriginal.
